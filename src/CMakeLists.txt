@@ -1,2 +1,2 @@
-add_executable(main raytracer.cpp)
-target_link_libraries(main clew OpenCLHelper)
+add_subdirectory(CLRay)
+add_subdirectory(app)

@@ -8,7 +8,10 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 set(ARCHIVE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 
+set(CMAKE_INCLUDE_CURRENT_DIR on)
+
 # This is not used yet, but it will be soon ;-)
+include_directories(3rd)
 include_directories(3rd/clew)
 include_directories(3rd/clew/include)
 include_directories(3rd/OpenCLHelper)
