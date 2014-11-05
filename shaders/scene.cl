@@ -1,6 +1,6 @@
-const int kAntiAliasingSamples  = 2;
-const int kMaxTraceDepth = 2;
-const float kMaxRenderDist = 1000.0f;
+constant int kAntiAliasingSamples  = 2;
+constant int kMaxTraceDepth = 2;
+constant float kMaxRenderDist = 1000.0f;
 
 struct Material{
 	/* 0 - Standard diffuse color, 1 - Compute 'Chessboard' texture */
@@ -208,7 +208,7 @@ float4 raytrace(struct Ray* ray, struct Scene* scene,int traceDepth)
 			color += pointLit*diffuseColor*scene->lights[i].color*max(0.0f,dot(normal, L));
 		}
 	}
-	return clamp(color,0,1);
+	return clamp(color,0.f,1.f);
 }
 
 float3 matrixVectorMultiply(__global float* matrix, float3* vector){ 
@@ -219,7 +219,7 @@ float3 matrixVectorMultiply(__global float* matrix, float3* vector){
 	return result;
 }
 
-__kernel void main( __global float4 *dst, uint width, uint height, __global float* viewTransform, __global float* worldTransforms )                                 
+__kernel void tracekernel( __global float4 *dst, uint width, uint height, __global float* viewTransform, __global float* worldTransforms )                                 
 {                                                                            
 	struct Scene scene;
 	

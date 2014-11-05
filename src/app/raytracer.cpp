@@ -42,7 +42,7 @@ void InitOpenCL()
 
     OpenCLHelper cl(0);
     auto kernel_src_file = std::string("/Users/uuplusu/Github/CLRay/shaders/scene.cl");
-    kernel = cl.buildKernel(kernel_src_file, "trace");
+    kernel = cl.buildKernel(kernel_src_file, "tracekernel");
 
     buffer = cl.arrayFloat(kWidth * kHeight *sizeof(cl_float4));
 
