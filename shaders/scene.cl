@@ -175,7 +175,7 @@ float4 raytrace(struct Ray* ray, struct Scene* scene,int traceDepth)
 				float3 R = reflect(ray->dir, normal);
 				reflectRay.origin = intersectPos + R*0.001;
 				reflectRay.dir    = R;
-				diffuseColor += m->reflectivity*raytrace(&reflectRay, scene, traceDepth+1);
+				//diffuseColor += m->reflectivity*raytrace(&reflectRay, scene, traceDepth+1);
 		}
 		
 		if ( traceDepth < kMaxTraceDepth && m->refractivity > 0 ){
@@ -184,7 +184,7 @@ float4 raytrace(struct Ray* ray, struct Scene* scene,int traceDepth)
 				if ( dot(R,normal) < 0 ){
 					refractRay.origin = intersectPos + R*0.001;
 					refractRay.dir    = R;
-					diffuseColor = m->refractivity*raytrace(&refractRay, scene, traceDepth+1);
+					//diffuseColor = m->refractivity*raytrace(&refractRay, scene, traceDepth+1);
 				}
 		}
 		
