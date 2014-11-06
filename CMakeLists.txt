@@ -21,10 +21,10 @@ include_directories(3rd/clew/include)
 include_directories(3rd/OpenCLHelper)
 
 find_package(OpenCL REQUIRED)
-find_package(SDL2 REQUIRED)
+find_package(SDL REQUIRED)
 find_package(OpenGL REQUIRED)
 
-include_directories(${SDL2_INCLUDE_DIR})
+include_directories(${SDL_INCLUDE_DIR})
 include_directories(${OPENCL_INCLUDE_DIRS})
 
 message(opencl header: ${OPENCL_INCLUDE_DIRS})
