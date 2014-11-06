@@ -47,12 +47,12 @@ void InitOpenCL()
                                  device,
                                  0, NULL );
     // 4. Perform runtime source compilation, and obtain kernel entry point.
-    std::ifstream file("kernel.txt");
+    std::ifstream file("/Users/uuplusu/Github/CLRay/shaders/scene.cpp");
     std::string source;
     while(!file.eof()){
         char line[256];
         file.getline(line,255);
-        source += line;
+        source += std::string(line) + "\n";
     }
     
     cl_ulong maxSize;
@@ -65,6 +65,16 @@ void InitOpenCL()
                                                    NULL, NULL );
     cl_int result = clBuildProgram( program, 1, &device, NULL, NULL, NULL );
     if ( result ){
+        char* build_log;
+        size_t log_size;
+        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+        build_log = new char[log_size+1];
+        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
+        build_log[log_size] = '\0';
+        if( log_size > 2 ) {
+            std::cout << "build log: " << build_log << std::endl;
+        }
+        delete[] build_log;
         std::cout << "Error during compilation! (" << result << ")" << std::endl;
     }
     kernel = clCreateKernel( program, "main", NULL );
@@ -174,10 +184,11 @@ void Render(int delta)
 
 void Update(int delta)
 {
-    int count;
-    auto keys = SDL_GetKeyboardState(&count);
     
     float translate[3] = {0,0,0};
+    
+    int count;
+    const Uint8* keys = SDL_GetKeyboardState(&count);
     if ( keys[SDLK_DOWN] ){
         translate[2] = -0.01*delta;
     }
