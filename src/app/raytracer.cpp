@@ -47,12 +47,18 @@ void InitOpenCL()
                                  device,
                                  0, NULL );
     // 4. Perform runtime source compilation, and obtain kernel entry point.
-    std::ifstream file("/Users/uuplusu/Github/CLRay/shaders/scene.cpp");
+    std::ifstream file("scene.cl");
     std::string source;
+    if (file){
     while(!file.eof()){
         char line[256];
         file.getline(line,255);
         source += std::string(line) + "\n";
+    }
+    }
+    if (source.length()==0)
+    {
+        std::string err = "fail to load shader";
     }
     
     cl_ulong maxSize;

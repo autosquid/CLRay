@@ -130,87 +130,6 @@ float intersect(struct Ray* ray, struct Scene* scene, void** object, int* type)
     return minT;
 }
 
-float4 raytrace(struct Ray* ray, struct Scene* scene,int traceDepth)
-{
-    void* intersectObj = 0;
-    int intersectObjType = 0;
-    float t = intersect( ray, scene, &intersectObj, &intersectObjType);
-
-    float4 color = (float4)(0,0,0,0);
-    if ( t < kMaxRenderDist ){
-        float3 intersectPos = ray->origin+ray->dir*t ;
-        float3 normal;
-
-        struct Material* m = 0;
-
-        if ( intersectObjType == 1 ){		
-            normal = normalize(intersectPos-((struct Sphere*)intersectObj)->pos);
-            m = ((struct Sphere*)intersectObj)->m;
-        }
-        else if (intersectObjType == 2 ){
-            normal = ((struct Plane*)intersectObj)->normal;
-            m = ((struct Plane*)intersectObj)->m;
-        }
-
-        if ( !m ){
-            m = &scene->standardMaterial;
-        }
-
-        float4 diffuseColor = m->color;
-
-        if ( m->computeColorType == 1){
-            if ( (int)(intersectPos.x/5.0f) % 2 == 0 ){
-                if ( (int)(intersectPos.z/5.0f) % 2 == 0 ){
-                    diffuseColor = (float4)(0,0,0,0);
-                }
-            }
-            else{
-                if ( (int)(intersectPos.z/5.0f) % 2 != 0 ){
-                    diffuseColor = (float4)(0,0,0,0);
-                }
-            }
-        }
-        if ( traceDepth < kMaxTraceDepth && m->reflectivity > 0 ){
-            struct Ray reflectRay;
-            float3 R = reflect(ray->dir, normal);
-            reflectRay.origin = intersectPos + R*0.001;
-            reflectRay.dir    = R;
-            //diffuseColor += m->reflectivity*raytrace(&reflectRay, scene, traceDepth+1);
-        }
-
-        if ( traceDepth < kMaxTraceDepth && m->refractivity > 0 ){
-            struct Ray refractRay;
-            float3 R = refract(ray->dir, normal, 0.6);
-            if ( dot(R,normal) < 0 ){
-                refractRay.origin = intersectPos + R*0.001;
-                refractRay.dir    = R;
-                //diffuseColor = m->refractivity*raytrace(&refractRay, scene, traceDepth+1);
-            }
-        }
-
-        for(int i = 0; i < scene->lightsCount; i++){
-            float3 L = scene->lights[i].dir;
-            float lightDist = kMaxRenderDist;
-            if ( !scene->lights[i].directional ){
-                L = scene->lights[i].pos - intersectPos ;
-                lightDist = length(L);
-                L = normalize(L);
-            }
-
-            float pointLit = 1;
-            struct Ray shadowRay;
-            shadowRay.origin = intersectPos + L*0.001;
-            shadowRay.dir = L;
-            t = intersect( &shadowRay, scene, &intersectObj, &intersectObjType);
-            if ( t < lightDist ){
-                pointLit = 0;
-            }
-            color += pointLit*diffuseColor*scene->lights[i].color*max(0.0f,dot(normal, L));
-        }
-    }
-    return clamp(color,0.f,1.f);
-}
-
 float3 matrixVectorMultiply(__global float* matrix, float3* vector){ 
     float3 result;
     result.x = matrix[0]*((*vector).x)+matrix[4]*((*vector).y)+matrix[8]*((*vector).z)+matrix[12];
@@ -218,6 +137,29 @@ float3 matrixVectorMultiply(__global float* matrix, float3* vector){
     result.z = matrix[2]*((*vector).x)+matrix[6]*((*vector).y)+matrix[10]*((*vector).z)+matrix[14];
     return result;
 }
+
+float4 raytrace_6 (struct Ray* r, struct Scene* s, int d)
+{
+    return (float4)(0,0,0,0);
+}
+
+#define iters 0
+#include "tracecore.cl"  //defining NewtonRaphsonRsqrt_float_2
+
+#define iters 1
+#include "tracecore.cl"  //defining NewtonRaphsonRsqrt_float_2
+
+#define iters 2
+#include "tracecore.cl"  //defining NewtonRaphsonRsqrt_float_2
+
+#define iters 3
+#include "tracecore.cl"  //defining NewtonRaphsonRsqrt_double_3
+
+#define iters 4
+#include "tracecore.cl"  //defining NewtonRaphsonRsqrt_double_4
+
+#define iters 5
+#include "tracecore.cl"  //defining NewtonRaphsonRsqrt_double_4
 
 __kernel void tracekernel( __global float4 *dst, uint width, uint height, __global float* viewTransform, __global float* worldTransforms )                                 
 {                                                                            
@@ -295,7 +237,7 @@ __kernel void tracekernel( __global float4 *dst, uint width, uint height, __glob
             struct Ray r;
             r.origin = matrixVectorMultiply(viewTransform, &(float3)(0, 0, -1));
             r.dir    = normalize(matrixVectorMultiply(viewTransform, &(float3)(x, y, 0)) - r.origin);
-            float4 color = raytrace(&r, &scene, 0);
+            float4 color = TEMPLATE(raytrace, 0)(&r, &scene, 0);
             dst[get_global_id(0)] += color / (kAntiAliasingSamples*kAntiAliasingSamples) ;
         }
     }
