@@ -51,7 +51,7 @@ void InitOpenCL()
 	while(!file.eof()){
 		char line[256];
 		file.getline(line,255);
-		source += line;
+        source += std::string(line)+"\n";
 	}
 
 	cl_ulong maxSize;
@@ -66,7 +66,8 @@ void InitOpenCL()
 	if ( result ){
 		std::cout << "Error during compilation! (" << result << ")" << std::endl;
 	}
-	kernel = clCreateKernel( program, "main", NULL );
+	kernel = clCreateKernel( program, "tracekernel", NULL );
+
 	// 5. Create a data buffer.
 	buffer        = clCreateBuffer( context,
 									CL_MEM_WRITE_ONLY,
@@ -91,7 +92,6 @@ void InitOpenCL()
 
 void Render(int delta)
 {
-
 	clEnqueueNDRangeKernel(   queue,
 							kernel,
 							1,
