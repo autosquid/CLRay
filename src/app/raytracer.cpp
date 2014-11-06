@@ -77,7 +77,7 @@ void InitOpenCL()
         delete[] build_log;
         std::cout << "Error during compilation! (" << result << ")" << std::endl;
     }
-    kernel = clCreateKernel( program, "main", NULL );
+    kernel = clCreateKernel( program, "tracekernel", NULL );
     // 5. Create a data buffer.
     buffer        = clCreateBuffer( context,
                                    CL_MEM_WRITE_ONLY,
@@ -100,9 +100,8 @@ void InitOpenCL()
     clSetKernelArg(kernel, 4, sizeof(worldTransforms), (void*) &worldTransforms);
 }
 
-void Render(int delta)
+void Render(float delta)
 {
-    
     clEnqueueNDRangeKernel(   queue,
                            kernel,
                            1,
@@ -178,27 +177,27 @@ void Render(int delta)
     glVertex3f(1,-1,-1);
     glEnd();
     
-    SDL_GL_SwapWindow(window);
     clFinish( queue );
+    SDL_GL_SwapWindow(window);
 }
 
-void Update(int delta)
+void Update(float delta)
 {
     
-    float translate[3] = {0,0,0};
+    float translate[3] = {0,0.0,0};
     
     int count;
     const Uint8* keys = SDL_GetKeyboardState(&count);
-    if ( keys[SDLK_DOWN] ){
+    if ( keys[SDL_SCANCODE_DOWN] ){
         translate[2] = -0.01*delta;
     }
-    if ( keys[SDLK_UP] ){
+    if ( keys[SDL_SCANCODE_UP] ){
         translate[2] = 0.01*delta;
     }
-    if ( keys[SDLK_LEFT] ){
+    if ( keys[SDL_SCANCODE_LEFT] ){
         translate[0] =- 0.01*delta;
     }
-    if ( keys[SDLK_RIGHT] ){
+    if ( keys[SDL_SCANCODE_RIGHT] ){
         translate[0] = 0.01*delta;
     }
     
@@ -206,7 +205,6 @@ void Update(int delta)
     SDL_GetMouseState(&x,&y);
     int relX = (kWidth/2.0f - x)*delta;
     int relY = (kHeight/2.0f - y)*delta;
-    SDL_WarpMouseInWindow(window, kWidth/2.0f, kHeight/2.0f);
     
     glMatrixMode(GL_MODELVIEW);
     
@@ -265,8 +263,11 @@ int main(int argc, char* argv[])
                 SDL_WINDOWPOS_UNDEFINED,
                 kWidth, kHeight,
                 flags);
-        SDL_GL_CreateContext(window);
-
+    
+    SDL_GL_CreateContext(window);
+    
+    SDL_WarpMouseInWindow(window, kWidth/2.0f, kHeight/2.0f);
+    
     glEnable(GL_TEXTURE_2D);
     
         bool loop = true;
@@ -276,7 +277,7 @@ int main(int argc, char* argv[])
             lastTicks = SDL_GetTicks();
             SDL_Event e;
             while(SDL_PollEvent(&e)){
-                if ( e.type == SDL_QUIT ){
+                if ( e.type == SDL_QUIT){
                     loop = false;
                 }
                 else if ( e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE){
@@ -284,6 +285,7 @@ int main(int argc, char* argv[])
                 }
             }
         
+            delta *= 0.1;
         Update(delta);
         Render(delta);
         
